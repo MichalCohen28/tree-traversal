@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הסבר Tree Traversal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        
+        .traversal-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .mode-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .mode-btn:hover {
+            background: #f0f0ff;
+            transform: translateY(-2px);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .rule-title {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #764ba2;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8e9ff 100%);
+            border-radius: 10px;
+            border: 2px solid #667eea;
+        }
+        
+        .speed-control {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .speed-control label {
+            font-size: 1.1em;
+            color: #666;
+            margin-left: 10px;
+        }
+        
+        .speed-control input {
+            width: 200px;
+            margin: 0 10px;
+        }
+        
+        .tree-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            min-width: 1000px;
+            margin: 40px 0;
+            background: #fafafa;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #4CAF50;
+            background: #81C784;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .node.root {
+            background: #FF8A65;
+            border-color: #F4511E;
+        }
+        
+        .node.visited {
+            background: #FFD700;
+            border-color: #FFA500;
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        .node.current {
+            background: #FF6B6B;
+            border-color: #C92A2A;
+            transform: scale(1.3);
+            box-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.3); }
+            50% { transform: scale(1.4); }
+        }
+        
+        .line {
+            position: absolute;
+            background: #999;
+            height: 2px;
+            transform-origin: left center;
+            transition: all 0.3s ease;
+        }
+        
+        .line.active {
+            background: #FF6B6B;
+            height: 4px;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.6);
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .step-info {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #856404;
+            min-height: 120px;
+            font-size: 1.05em;
+            line-height: 2;
+        }
+        
+        .step-detail {
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 5px;
+            background: white;
+            border-right: 4px solid #ffc107;
+            transition: all 0.3s ease;
+        }
+        
+        .step-detail.current {
+            background: #fffacd;
+            border-right-color: #ff9800;
+            font-weight: bold;
+            font-size: 1.15em;
+            transform: translateX(-5px);
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        }
+        
+        .step-detail.completed {
+            opacity: 0.5;
+            background: #f5f5f5;
+        }
+        
+        .output {
+            background: #2d3748;
+            color: #68d391;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.3em;
+            text-align: left;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+            direction: ltr;
+        }
+        
+        .output .label {
+            direction: rtl;
+            margin-left: 10px;
+        }
+        
+        .final-result {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3em;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 Binary Tree Traversal - מעברי עץ בינארי</h1>
+        <p class="subtitle">הדרכה אינטראקטיבית לסריקת עץ בינארי</p>
+        
+        <div class="traversal-selector">
+            <button class="mode-btn active" data-mode="inorder">In-Order</button>
+            <button class="mode-btn" data-mode="preorder">Pre-Order</button>
+            <button class="mode-btn" data-mode="postorder">Post-Order</button>
+        </div>
+        
+        <div class="rule-title" id="ruleTitle">חוק In-Order: שמאל ← שורש ← ימין</div>
+        
+        <div class="speed-control">
+            <label>מהירות אנימציה:</label>
+            <input type="range" id="speedSlider" min="500" max="3000" value="1500" step="100">
+            <span id="speedValue">1.5s</span>
+        </div>
+        
+        <div class="tree-container" id="treeContainer"></div>
+        
+        <div class="controls">
+            <button id="startBtn">▶️ התחל הדגמה</button>
+            <button id="resetBtn">🔄 אפס</button>
+            <button id="stepBtn">👣 צעד הבא</button>
+            <button id="downloadBtn">📄 הורד הסבר מילולי</button>
+        </div>
+        
+        <div class="step-info" id="stepInfo">
+            <div style="text-align: center; color: #999; font-style: italic;">
+                לחץ על "התחל הדגמה" או "צעד הבא" כדי לראות הסבר מפורט...
+            </div>
+        </div>
+        
+        <div class="output" id="output"><span class="label">:תוצאה</span> []</div>
+        
+        <div class="final-result" id="finalResult"></div>
+    </div>
+
+    <script>
+        // Tree structure
+        const tree = {
+            value: 25,
+            left: {
+                value: 15,
+                left: {
+                    value: 10,
+                    left: { value: 4 },
+                    right: { value: 12 }
+                },
+                right: {
+                    value: 22,
+                    left: { value: 18 },
+                    right: { value: 24 }
+                }
+            },
+            right: {
+                value: 50,
+                left: {
+                    value: 35,
+                    left: { value: 31 },
+                    right: { value: 44 }
+                },
+                right: {
+                    value: 70,
+                    left: { value: 66 },
+                    right: { value: 90 }
+                }
+            }
+        };
+
+        let result = [];
+        let steps = [];
+        let currentStep = 0;
+        let animationSpeed = 1500;
+        let isAnimating = false;
+        let currentMode = 'inorder';
+        let detailedStepsList = [];
+
+        // Node positions
+        const positions = {
+            25: [500, 50],
+            15: [300, 120],
+            50: [700, 120],
+            10: [200, 190],
+            22: [400, 190],
+            35: [600, 190],
+            70: [800, 190],
+            4: [150, 260],
+            12: [250, 260],
+            18: [350, 260],
+            24: [450, 260],
+            31: [550, 260],
+            44: [650, 260],
+            66: [750, 260],
+            90: [850, 260]
+        };
+
+        // Explanations with Left Arrows
+        const explanations = {
+            inorder: {
+                rule: 'חוק In-Order: תת-עץ שמאלי ← שורש ← תת-עץ ימני',
+                note: 'שים לב שהערכים ממוינים בסדר עולה! זו תכונה מיוחדת של עץ חיפוש בינארי.'
+            },
+            preorder: {
+                rule: 'חוק Pre-Order: שורש ← תת-עץ שמאלי ← תת-עץ ימני',
+                note: 'Pre-Order מועיל ליצירת עותק של העץ או לייצוא שלו למבנה נתונים אחר.'
+            },
+            postorder: {
+                rule: 'חוק Post-Order: תת-עץ שמאלי ← תת-עץ ימני ← שורש',
+                note: 'Post-Order מועיל למחיקת עץ או לחישוב גובה העץ.'
+            }
+        };
+
+        function generateDetailedSteps(node, mode, steps, path) {
+            if (!node) return;
+            
+            const indent = '  '.repeat(path.length);
+            const pathStr = path.length > 0 ? ` <span style="color: #999;">[ב: ${path.join(' ← ')}]</span>` : ' <span style="color: #999;">[שורש]</span>';
+            
+            steps.push({
+                text: `${indent}📍 מגיעים לצומת <strong>${node.value}</strong>${pathStr}`,
+                type: 'visit',
+                value: node.value
+            });
+            
+            if (mode === 'preorder') {
+                steps.push({
+                    text: `${indent}📤 <strong style="color: #28a745;">מדפיסים: ${node.value}</strong> <span style="color: #999;">(Pre-Order - השורש קודם!)</span>`,
+                    type: 'print',
+                    value: node.value
+                });
+            }
+            
+            if (node.left) {
+                steps.push({
+                    text: `${indent}⬅️ יש ילד שמאלי (<strong>${node.left.value}</strong>) - הולכים אליו`,
+                    type: 'goLeft',
+                    from: node.value,
+                    to: node.left.value
+                });
+                generateDetailedSteps(node.left, mode, steps, [...path, node.value]);
+                steps.push({
+                    text: `${indent}⬆️ חזרנו לצומת <strong>${node.value}</strong> <span style="color: #999;">(סיימנו תת-עץ שמאלי)</span>`,
+                    type: 'return',
+                    value: node.value
+                });
+            } else {
+                steps.push({
+                    text: `${indent}❌ אין ילד שמאלי לצומת ${node.value}`,
+                    type: 'none'
+                });
+            }
+            
+            if (mode === 'inorder') {
+                steps.push({
+                    text: `${indent}📤 <strong style="color: #28a745;">מדפיסים: ${node.value}</strong> <span style="color: #999;">(In-Order - השורש באמצע!)</span>`,
+                    type: 'print',
+                    value: node.value
+                });
+            }
+            
+            if (node.right) {
+                steps.push({
+                    text: `${indent}➡️ יש ילד ימני (<strong>${node.right.value}</strong>) - הולכים אליו`,
+                    type: 'goRight',
+                    from: node.value,
+                    to: node.right.value
+                });
+                generateDetailedSteps(node.right, mode, steps, [...path, node.value]);
+                steps.push({
+                    text: `${indent}⬆️ חזרנו לצומת <strong>${node.value}</strong> <span style="color: #999;">(סיימנו תת-עץ ימני)</span>`,
+                    type: 'return',
+                    value: node.value
+                });
+            } else {
+                steps.push({
+                    text: `${indent}❌ אין ילד ימני לצומת ${node.value}`,
+                    type: 'none'
+                });
+            }
+            
+            if (mode === 'postorder') {
+                steps.push({
+                    text: `${indent}📤 <strong style="color: #28a745;">מדפיסים: ${node.value}</strong> <span style="color: #999;">(Post-Order - השורש בסוף!)</span>`,
+                    type: 'print',
+                    value: node.value
+                });
+            }
+            
+            if (path.length > 0) {
+                steps.push({
+                    text: `${indent}✅ סיימנו עם צומת ${node.value}`,
+                    type: 'done'
+                });
+            }
+        }
+
+        function updateStepDisplay() {
+            const stepInfoDiv = document.getElementById('stepInfo');
+            
+            if (detailedStepsList.length === 0) {
+                stepInfoDiv.innerHTML = '<div style="text-align: center; color: #999; font-style: italic;">לחץ על "התחל הדגמה" או "צעד הבא" כדי לראות הסבר מפורט...</div>';
+                return;
+            }
+            
+            if (currentStep >= detailedStepsList.length) {
+                stepInfoDiv.innerHTML = '<div style="text-align: center; color: #28a745; font-weight: bold; font-size: 1.2em;">✅ סיימנו את כל השלבים!</div>';
+                return;
+            }
+            
+            const step = detailedStepsList[currentStep];
+            stepInfoDiv.innerHTML = `
+                <div style="text-align: center; color: #999; margin-bottom: 10px;">
+                    שלב ${currentStep + 1} מתוך ${detailedStepsList.length}
+                </div>
+                <div class="step-detail current">${step.text}</div>
+            `;
+        }
+
+        function drawTree() {
+            const container = document.getElementById('treeContainer');
+            container.innerHTML = '';
+            drawLines(tree, 'treeContainer');
+            drawNodes(tree);
+        }
+
+        function drawLines(node, containerId, parentPos = null) {
+            if (!node) return;
+            const pos = positions[node.value];
+            
+            if (parentPos) {
+                const line = document.createElement('div');
+                line.className = 'line';
+                line.id = `line-${parentPos[0]}-${parentPos[1]}-${pos[0]}-${pos[1]}`;
+                
+                const length = Math.sqrt(Math.pow(pos[0] - parentPos[0], 2) + Math.pow(pos[1] - parentPos[1], 2));
+                const angle = Math.atan2(pos[1] - parentPos[1], pos[0] - parentPos[0]) * 180 / Math.PI;
+                
+                line.style.width = length + 'px';
+                line.style.left = (parentPos[0] + 25) + 'px';
+                line.style.top = (parentPos[1] + 25) + 'px';
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                document.getElementById(containerId).appendChild(line);
+            }
+            
+            if (node.left) drawLines(node.left, containerId, pos);
+            if (node.right) drawLines(node.right, containerId, pos);
+        }
+
+        function drawNodes(node) {
+            if (!node) return;
+            
+            const pos = positions[node.value];
+            const nodeEl = document.createElement('div');
+            nodeEl.className = 'node';
+            if (node.value === 25) nodeEl.classList.add('root');
+            nodeEl.id = `node-${node.value}`;
+            nodeEl.textContent = node.value;
+            nodeEl.style.left = pos[0] + 'px';
+            nodeEl.style.top = pos[1] + 'px';
+            
+            document.getElementById('treeContainer').appendChild(nodeEl);
+            
+            if (node.left) drawNodes(node.left);
+            if (node.right) drawNodes(node.right);
+        }
+
+        function highlightNode(value, className) {
+            const node = document.getElementById(`node-${value}`);
+            if (node) {
+                node.className = 'node';
+                if (value === 25) node.classList.add('root');
+                if (className) node.classList.add(className);
+            }
+        }
+
+        function highlightLine(from, to) {
+            document.querySelectorAll('.line').forEach(line => line.classList.remove('active'));
+            const fromPos = positions[from];
+            const toPos = positions[to];
+            const line = document.getElementById(`line-${fromPos[0]}-${fromPos[1]}-${toPos[0]}-${toPos[1]}`);
+            if (line) line.classList.add('active');
+        }
+
+        async function executeStep() {
+            if (currentStep >= detailedStepsList.length) {
+                const exp = explanations[currentMode];
+                document.getElementById('finalResult').style.display = 'block';
+                document.getElementById('finalResult').innerHTML = `
+                    <strong>🎉 סיימנו!</strong><br>
+                    הסדר המלא (${currentMode.toUpperCase()}): [${result.join(', ')}]<br>
+                    ${exp.note}
+                `;
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stepBtn').disabled = true;
+                isAnimating = false;
+                return;
+            }
+            
+            const step = detailedStepsList[currentStep];
+            
+            switch(step.type) {
+                case 'visit':
+                    highlightNode(step.value, 'current');
+                    break;
+                case 'goLeft':
+                case 'goRight':
+                    highlightLine(step.from, step.to);
+                    break;
+                case 'print':
+                    result.push(step.value);
+                    highlightNode(step.value, 'visited');
+                    document.getElementById('output').innerHTML = `<span class="label">:תוצאה</span> [${result.join(', ')}]`;
+                    break;
+            }
+            
+            currentStep++;
+            updateStepDisplay();
+        }
+
+        async function animate() {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            while (currentStep < detailedStepsList.length && isAnimating) {
+                await executeStep();
+                await new Promise(resolve => setTimeout(resolve, animationSpeed));
+            }
+        }
+
+        function reset() {
+            isAnimating = false;
+            result = [];
+            currentStep = 0;
+            
+            detailedStepsList = [];
+            generateDetailedSteps(tree, currentMode, detailedStepsList, []);
+            
+            drawTree();
+            updateStepDisplay();
+            
+            document.getElementById('output').innerHTML = '<span class="label">:תוצאה</span> []';
+            document.getElementById('finalResult').style.display = 'none';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stepBtn').disabled = false;
+        }
+
+        function changeMode(mode) {
+            currentMode = mode;
+            document.getElementById('ruleTitle').textContent = explanations[mode].rule;
+            reset();
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.mode === mode) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function generateExplanationDoc() {
+            const exp = explanations[currentMode];
+            const modeName = currentMode === 'inorder' ? 'In-Order' : 
+                           currentMode === 'preorder' ? 'Pre-Order' : 'Post-Order';
+            
+            let content = `═══════════════════════════════════════════════════════
+  הסבר מפורט - ${modeName} Traversal
+═══════════════════════════════════════════════════════
+
+📚 מה זה ${modeName}?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${exp.rule}
+
+🌳 העץ שלנו:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    25
+            __________|__________
+           /                     \\
+          15                      50
+       ___|___                ___|___
+      /       \\              /       \\
+     10        22            35        70
+    / \\      / \\          / \\      / \\
+   4  12    18  24        31  44    66  90
+
+
+👣 מעבר צעד אחר צעד:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+
+            detailedStepsList.forEach((step, index) => {
+                const cleanText = step.text.replace(/<[^>]*>/g, '');
+                content += `${index + 1}. ${cleanText}\n`;
+            });
+            
+            content += `\n\n✅ תוצאה סופית:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+הסדר המלא: [${detailedStepsList.filter(s => s.type === 'print').map(s => s.value).join(', ')}]
+
+${exp.note}
+
+═══════════════════════════════════════════════════════
+`;
+            
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${modeName}_explanation.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+
+        // Event listeners
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (currentStep >= detailedStepsList.length) return;
+            animate();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', reset);
+
+        document.getElementById('stepBtn').addEventListener('click', () => {
+            if (currentStep >= detailedStepsList.length) return;
+            executeStep();
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            animationSpeed = parseInt(e.target.value);
+            document.getElementById('speedValue').textContent = (animationSpeed / 1000).toFixed(1) + 's';
+        });
+
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                changeMode(btn.dataset.mode);
+            });
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', generateExplanationDoc);
+
+        // Initialize
+        detailedStepsList = [];
+        generateDetailedSteps(tree, currentMode, detailedStepsList, []);
+        drawTree();
+        updateStepDisplay();
+    </script>
+</body>
+</html>
